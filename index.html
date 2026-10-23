@@ -1,11 +1,1078 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Lumina Spectrum | Fine Art Photography Portfolio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '#E5C158',
+                            500: '#D4AF37',
+                            600: '#B89320'
+                        },
+                        dark: {
+                            900: '#0B0C10',
+                            800: '#14161D',
+                            700: '#1F222E',
+                            600: '#2A2E3D'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Anti-download security layers */
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        .protected-img-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Transparent interaction shield to prevent context menu and saving */
+        .protection-shield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 20;
+            background: rgba(0,0,0,0);
+            cursor: pointer;
+        }
+
+        /* Subtle dynamic watermark */
+        .watermark-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.18;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.05),
+                rgba(255, 255, 255, 0.05) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0C10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2A2E3D;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+
+        /* Print restriction */
+        @media print {
+            body { display: none !important; }
+        }
+    </style>
 </head>
-<body>
-   <h1>aku</h1> 
+<body class="bg-dark-900 text-slate-100 font-sans min-h-screen flex flex-col no-select selection:bg-gold-500 selection:text-black">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none max-w-sm w-full px-4"></div>
+
+    <!-- Right Click Warning Popup -->
+    <div id="protectionAlert" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-dark-800 border border-gold-500/30 p-6 rounded-2xl shadow-2xl max-w-md text-center transform scale-95 transition-transform duration-300" id="protectionAlertBox">
+            <div class="w-16 h-16 bg-gold-500/10 text-gold-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-gold-500/20">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-serif text-white mb-2">Protected Content</h3>
+            <p class="text-slate-400 text-sm mb-6">All photographs are protected under copyright law. Downloading, saving, or inspecting full-resolution image assets is restricted.</p>
+            <button onclick="hideProtectionAlert()" class="bg-gold-500 text-dark-900 font-semibold px-6 py-2.5 rounded-xl hover:bg-gold-400 transition-colors text-sm">
+                I Understand
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-30 bg-dark-900/80 backdrop-blur-md border-b border-dark-700/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-gold-600 to-gold-400 flex items-center justify-center text-dark-900 font-bold text-xl shadow-lg shadow-gold-500/10">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif text-xl tracking-wide font-bold bg-gradient-to-r from-white via-slate-200 to-gold-400 bg-clip-text text-transparent">LUMINA</h1>
+                    <p class="text-[10px] uppercase tracking-widest text-slate-400 font-medium">Fine Art Visuals</p>
+                </div>
+            </div>
+
+            <!-- Stats / Admin Status & Controls -->
+            <div class="flex items-center gap-4">
+                <!-- Logged in Admin Badge & Controls -->
+                <div id="adminBadge" class="hidden items-center gap-3 bg-dark-800 border border-gold-500/30 rounded-xl px-3 py-1.5">
+                    <div class="flex items-center gap-2 text-xs text-gold-400 font-medium">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>Admin Mode</span>
+                    </div>
+                    <div class="h-4 w-[1px] bg-dark-600"></div>
+                    <button id="openUploadBtn" onclick="openUploadModal()" class="text-xs bg-gold-500 hover:bg-gold-400 text-dark-900 font-semibold px-3 py-1 rounded-lg transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Upload
+                    </button>
+                    <button onclick="logoutAdmin()" title="Logout" class="text-slate-400 hover:text-red-400 text-xs p-1 transition-colors">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+
+                <!-- Admin Login Button -->
+                <button id="loginModalBtn" onclick="openLoginModal()" class="flex items-center gap-2 bg-dark-800 border border-dark-600 hover:border-gold-500/50 text-slate-300 hover:text-gold-400 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm">
+                    <i class="fa-solid fa-user-lock text-xs"></i>
+                    <span>Admin Login</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Hero & Intro Banner -->
+        <section class="text-center py-8 mb-6">
+            <span class="text-xs uppercase tracking-widest text-gold-500 font-semibold mb-2 block">Captured Moments</span>
+            <h2 class="text-3xl sm:text-5xl font-serif text-white font-bold mb-4">Visual Storytelling Gallery</h2>
+            <p class="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
+                Explore a curated collection of landscapes, portraiture, street life, and editorial work. Protected gallery view for client preview and exhibition.
+            </p>
+        </section>
+
+        <!-- Category Filter & Search Bar -->
+        <section class="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-dark-800">
+            <!-- Categories Filter Tabs -->
+            <div id="categoryTabs" class="flex flex-wrap items-center justify-center gap-2">
+                <!-- JS will populate categories dynamic + static buttons -->
+            </div>
+
+            <!-- Search / Count -->
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="relative w-full md:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search title or tags..." class="w-full bg-dark-800 border border-dark-700 focus:border-gold-500 text-slate-200 text-xs rounded-xl pl-9 pr-4 py-2.5 outline-none transition-colors">
+                </div>
+                <div class="text-xs text-slate-500 whitespace-nowrap bg-dark-800 px-3 py-2.5 rounded-xl border border-dark-700">
+                    <span id="photoCount">0</span> Photos
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Grid -->
+        <section>
+            <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Photo Cards rendered here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-20 bg-dark-800/40 rounded-3xl border border-dashed border-dark-700 mt-4">
+                <i class="fa-regular fa-image text-4xl text-slate-600 mb-3 block"></i>
+                <h3 class="text-lg font-medium text-slate-300">No photographs found</h3>
+                <p class="text-slate-500 text-sm mt-1">Try resetting search filters or upload photos in Admin Mode.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-900 border-t border-dark-800 py-8 mt-16 text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-shield-cat text-gold-500"></i>
+                <span>Right-click & Save disabled. Copyright &copy; <span id="currentYear"></span> Lumina Portfolio. All Rights Reserved.</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="hover:text-slate-300 transition-colors">Digital Watermarking Enabled</span>
+                <span>•</span>
+                <button onclick="openLoginModal()" class="hover:text-gold-400 transition-colors underline">Owner Portal</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- 1. LIGHTBOX MODAL (Public View Details) -->
+    <div id="lightboxModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-lg opacity-0 pointer-events-none transition-all duration-300 p-2 sm:p-6">
+        <div class="relative w-full max-w-5xl bg-dark-900 rounded-2xl border border-dark-700 shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92vh]">
+            <!-- Close Button -->
+            <button onclick="closeLightbox()" class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/60 text-slate-300 hover:text-white hover:bg-gold-500/80 flex items-center justify-center transition-all">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Image View Column with Shield overlay -->
+            <div class="relative flex-1 bg-black flex items-center justify-center min-h-[300px] md:min-h-[500px] overflow-hidden protected-img-container">
+                <!-- Protection Overlay -->
+                <div class="protection-shield" title="Protected Content"></div>
+                <!-- Diagonal Watermark Overlay -->
+                <div class="watermark-overlay"></div>
+                <div class="absolute bottom-3 left-3 z-10 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded text-[10px] text-slate-400 tracking-wider">
+                    <i class="fa-solid fa-lock text-gold-500 mr-1"></i> PROTECTED PREVIEW
+                </div>
+
+                <!-- Display Image -->
+                <img id="lightboxImg" src="" alt="Photo Detail" class="max-h-[75vh] w-auto max-w-full object-contain pointer-events-none no-select select-none">
+            </div>
+
+            <!-- Details Sidebar Column -->
+            <div class="w-full md:w-80 bg-dark-800 p-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-dark-700 overflow-y-auto">
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <span id="lightboxCategory" class="text-[11px] font-semibold text-gold-400 uppercase tracking-widest bg-gold-500/10 px-2.5 py-1 rounded-md border border-gold-500/20">Category</span>
+                        <span id="lightboxDate" class="text-[11px] text-slate-500">Date</span>
+                    </div>
+
+                    <h3 id="lightboxTitle" class="text-2xl font-serif text-white font-bold mb-3 leading-snug">Photo Title</h3>
+                    <p id="lightboxDesc" class="text-slate-300 text-sm leading-relaxed mb-6 whitespace-pre-line">Photo Description...</p>
+                </div>
+
+                <div class="pt-4 border-t border-dark-700">
+                    <div class="bg-dark-900/60 p-3 rounded-xl border border-dark-700/50 mb-4">
+                        <p class="text-[11px] text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-gold-500"></i>
+                            Downloading and high-res extraction are strictly restricted.
+                        </p>
+                    </div>
+
+                    <!-- Admin Action buttons inside Lightbox -->
+                    <div id="lightboxAdminActions" class="hidden flex gap-2">
+                        <button id="lightboxEditBtn" onclick="" class="flex-1 bg-dark-700 hover:bg-dark-600 text-slate-200 text-xs font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-pen-to-square text-gold-400"></i> Edit Photo
+                        </button>
+                        <button id="lightboxDeleteBtn" onclick="" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold px-3 py-2.5 rounded-xl transition-colors flex items-center justify-center">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. LOGIN MODAL -->
+    <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-dark-800 border border-dark-700 w-full max-w-md rounded-2xl p-6 sm:p-8 shadow-2xl relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-gold-500/10 text-gold-400 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-gold-500/20">
+                    <i class="fa-solid fa-user-shield text-xl"></i>
+                </div>
+                <h3 class="text-xl font-serif font-bold text-white">Owner Portal Login</h3>
+                <p class="text-slate-400 text-xs mt-1">Sign in to manage and edit your portfolio</p>
+            </div>
+
+            <!-- Login Demo Hint Banner -->
+            <div class="bg-gold-500/10 border border-gold-500/20 rounded-xl p-3 mb-5 text-xs text-gold-400 flex items-start gap-2">
+                <i class="fa-solid fa-key mt-0.5"></i>
+                <div>
+                    <span class="font-semibold">Demo Credentials:</span>
+                    <div class="mt-0.5 font-mono text-[11px] text-slate-300">Username: <span class="text-gold-300">admin</span> | Password: <span class="text-gold-300">password123</span></div>
+                </div>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Username</label>
+                    <input type="text" id="loginUser" required placeholder="Enter username" class="w-full bg-dark-900 border border-dark-700 focus:border-gold-500 text-slate-200 text-xs rounded-xl px-4 py-3 outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+                    <input type="password" id="loginPass" required placeholder="Enter password" class="w-full bg-dark-900 border border-dark-700 focus:border-gold-500 text-slate-200 text-xs rounded-xl px-4 py-3 outline-none transition-colors">
+                </div>
+                <button type="submit" class="w-full bg-gold-500 hover:bg-gold-400 text-dark-900 font-semibold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-gold-500/20 mt-2">
+                    Login to Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. UPLOAD & PHOTO EDITOR MODAL (Admin Only) -->
+    <div id="uploadModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 p-4 overflow-y-auto">
+        <div class="bg-dark-800 border border-dark-700 w-full max-w-3xl rounded-2xl p-6 shadow-2xl relative my-8">
+            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="mb-6">
+                <h3 id="uploadModalTitle" class="text-xl font-serif font-bold text-white">Upload New Photograph</h3>
+                <p class="text-slate-400 text-xs mt-1">Add new photography works with built-in post-processing adjustment tool.</p>
+            </div>
+
+            <form id="photoForm" onsubmit="handlePhotoSave(event)" class="space-y-6">
+                <input type="hidden" id="editingPhotoId" value="">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left Column: Image Source Input & Interactive Editor Preview -->
+                    <div class="space-y-4">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Photo File or URL</label>
+
+                        <!-- Tab Selection for Source -->
+                        <div class="flex border-b border-dark-700 text-xs">
+                            <button type="button" onclick="toggleSourceTab('file')" id="tabFileBtn" class="px-4 py-2 border-b-2 border-gold-500 font-semibold text-gold-400">File Upload</button>
+                            <button type="button" onclick="toggleSourceTab('url')" id="tabUrlBtn" class="px-4 py-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200">Image URL</button>
+                        </div>
+
+                        <!-- File Drag and Drop Box -->
+                        <div id="fileSourceBox" class="block">
+                            <label for="imageFileInput" class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-dark-600 hover:border-gold-500/60 bg-dark-900/60 rounded-xl cursor-pointer transition-colors p-4 text-center">
+                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-gold-400 mb-2"></i>
+                                <span class="text-xs text-slate-300 font-medium">Click to upload or drag image here</span>
+                                <span class="text-[10px] text-slate-500 mt-1">PNG, JPG, WEBP, or GIF (max 5MB)</span>
+                                <input id="imageFileInput" type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                            </label>
+                        </div>
+
+                        <!-- URL Input Box -->
+                        <div id="urlSourceBox" class="hidden">
+                            <input type="url" id="imageUrlInput" placeholder="https://images.unsplash.com/..." onchange="handleUrlChange(event)" class="w-full bg-dark-900 border border-dark-700 focus:border-gold-500 text-slate-200 text-xs rounded-xl px-4 py-2.5 outline-none">
+                        </div>
+
+                        <!-- Live Editor Preview Canvas Area -->
+                        <div class="mt-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-sliders text-gold-400"></i> Editor Adjustment Preview
+                                </span>
+                                <button type="button" onclick="resetFilterSliders()" class="text-[10px] text-slate-400 hover:text-gold-400 underline">Reset FX</button>
+                            </div>
+
+                            <div class="relative w-full h-48 bg-dark-900 rounded-xl border border-dark-700 overflow-hidden flex items-center justify-center protected-img-container">
+                                <div class="protection-shield"></div>
+                                <img id="editorPreviewImg" src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=800&q=80" alt="Live Preview" class="max-h-full max-w-full object-contain no-select pointer-events-none">
+                            </div>
+                        </div>
+
+                        <!-- Adjustment Sliders -->
+                        <div class="space-y-3 bg-dark-900/40 p-3 rounded-xl border border-dark-700/60 text-xs">
+                            <div>
+                                <div class="flex justify-between text-slate-400 mb-1">
+                                    <span>Brightness</span>
+                                    <span id="brightnessVal">100%</span>
+                                </div>
+                                <input type="range" id="sliderBrightness" min="30" max="170" value="100" oninput="applyImageFilters()" class="w-full accent-gold-500 h-1 bg-dark-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-slate-400 mb-1">
+                                    <span>Contrast</span>
+                                    <span id="contrastVal">100%</span>
+                                </div>
+                                <input type="range" id="sliderContrast" min="30" max="170" value="100" oninput="applyImageFilters()" class="w-full accent-gold-500 h-1 bg-dark-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-slate-400 mb-1">
+                                    <span>Saturation</span>
+                                    <span id="saturateVal">100%</span>
+                                </div>
+                                <input type="range" id="sliderSaturate" min="0" max="200" value="100" oninput="applyImageFilters()" class="w-full accent-gold-500 h-1 bg-dark-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-slate-400 mb-1">
+                                    <span>Sepia / Warmth</span>
+                                    <span id="sepiaVal">0%</span>
+                                </div>
+                                <input type="range" id="sliderSepia" min="0" max="100" value="0" oninput="applyImageFilters()" class="w-full accent-gold-500 h-1 bg-dark-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-slate-400 mb-1">
+                                    <span>Blur</span>
+                                    <span id="blurVal">0px</span>
+                                </div>
+                                <input type="range" id="sliderBlur" min="0" max="10" value="0" step="0.5" oninput="applyImageFilters()" class="w-full accent-gold-500 h-1 bg-dark-700 rounded-lg cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Metadata Fields -->
+                    <div class="space-y-4 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Photo Title *</label>
+                                <input type="text" id="photoTitleInput" required placeholder="e.g. Golden Hour Mist" class="w-full bg-dark-900 border border-dark-700 focus:border-gold-500 text-slate-200 text-xs rounded-xl px-4 py-2.5 outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Category *</label>
+                                <select id="photoCategorySelect" required class="w-full bg-dark-900 border border-dark-700 focus:border-gold-500 text-slate-200 text-xs rounded-xl px-4 py-2.5 outline-none">
+                                    <option value="Landscape">Landscape</option>
+                                    <option value="Portrait">Portrait</option>
+                                    <option value="Street">Street</option>
+                                    <option value="Wedding">Wedding</option>
+                                    <option value="Architecture">Architecture</option>
+                                    <option value="Fine Art">Fine Art</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Description</label>
+                                <textarea id="photoDescInput" rows="5" placeholder="Story behind the shot, gear used, camera settings..." class="w-full bg-dark-900 border border-dark-700 focus:border-gold-500 text-slate-200 text-xs rounded-xl px-4 py-2.5 outline-none resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-dark-700 flex gap-3">
+                            <button type="button" onclick="closeUploadModal()" class="w-1/3 bg-dark-700 hover:bg-dark-600 text-slate-300 font-semibold py-2.5 rounded-xl transition-colors text-xs">
+                                Cancel
+                            </button>
+                            <button type="submit" class="w-2/3 bg-gold-500 hover:bg-gold-400 text-dark-900 font-semibold py-2.5 rounded-xl transition-colors text-xs shadow-lg shadow-gold-500/20 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Save & Publish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT LOGIC -->
+    <script>
+        // Initial Default Portfolio Dataset
+        const DEFAULT_PHOTOS = [
+            {
+                id: '1',
+                title: 'Mystic Mountain Ridge',
+                category: 'Landscape',
+                description: 'Captured at sunrise in the Alps. Soft morning fog rolling through evergreen pines.',
+                url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+                date: '2026-03-15',
+                filters: 'brightness(100%) contrast(105%) saturate(110%) sepia(0%) blur(0px)'
+            },
+            {
+                id: '2',
+                title: 'Urban Shadows & Echoes',
+                category: 'Street',
+                description: 'Candid street photography exploring geometry, light, and solitude in downtown Tokyo.',
+                url: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1200&q=80',
+                date: '2026-02-28',
+                filters: 'brightness(95%) contrast(120%) saturate(85%) sepia(10%) blur(0px)'
+            },
+            {
+                id: '3',
+                title: 'Ethereal Studio Portrait',
+                category: 'Portrait',
+                description: 'High-contrast studio session playing with warm rim lighting and natural emotion.',
+                url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80',
+                date: '2026-01-14',
+                filters: 'brightness(105%) contrast(100%) saturate(95%) sepia(5%) blur(0px)'
+            },
+            {
+                id: '4',
+                title: 'Eternal Vows under Dusk',
+                category: 'Wedding',
+                description: 'Intimate golden-hour moment captured during a cliffside destination wedding.',
+                url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+                date: '2026-04-02',
+                filters: 'brightness(100%) contrast(100%) saturate(115%) sepia(12%) blur(0px)'
+            },
+            {
+                id: '5',
+                title: 'Monolithic Symmetry',
+                category: 'Architecture',
+                description: 'Minimalist perspective on modern glass and steel architectural structures.',
+                url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+                date: '2025-11-20',
+                filters: 'brightness(100%) contrast(110%) saturate(100%) sepia(0%) blur(0px)'
+            },
+            {
+                id: '6',
+                title: 'Ocean Horizon Serenity',
+                category: 'Fine Art',
+                description: 'Long exposure seascape revealing the calming rhythm of tidal movement.',
+                url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+                date: '2025-10-08',
+                filters: 'brightness(100%) contrast(100%) saturate(120%) sepia(0%) blur(0px)'
+            }
+        ];
+
+        // Global State
+        let photos = [];
+        let currentFilter = 'All';
+        let searchQuery = '';
+        let isAdminLoggedIn = false;
+        let activeSourceTab = 'file';
+        let previewBase64 = '';
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            // Load persistent storage or defaults
+            loadPhotosFromStorage();
+            checkAdminSession();
+            renderCategories();
+            renderGallery();
+            setupAntiDownloadGuards();
+        });
+
+        /* ================= AUTHENTICATION LOGIC ================= */
+        function checkAdminSession() {
+            const session = localStorage.getItem('lumina_admin_logged');
+            if (session === 'true') {
+                isAdminLoggedIn = true;
+                updateAdminUI(true);
+            } else {
+                isAdminLoggedIn = false;
+                updateAdminUI(false);
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            if (user === 'admin' && pass === 'password123') {
+                isAdminLoggedIn = true;
+                localStorage.setItem('lumina_admin_logged', 'true');
+                updateAdminUI(true);
+                closeLoginModal();
+                showToast('Welcome Back, Admin!', 'success');
+                renderGallery(); // Re-render to show edit/delete triggers on cards
+            } else {
+                showToast('Invalid credentials. Please try again.', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            localStorage.removeItem('lumina_admin_logged');
+            updateAdminUI(false);
+            showToast('Logged out successfully.', 'info');
+            renderGallery();
+        }
+
+        function updateAdminUI(loggedIn) {
+            const badge = document.getElementById('adminBadge');
+            const loginBtn = document.getElementById('loginModalBtn');
+            const lightboxActions = document.getElementById('lightboxAdminActions');
+
+            if (loggedIn) {
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                loginBtn.classList.add('hidden');
+                if (lightboxActions) lightboxActions.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+                loginBtn.classList.remove('hidden');
+                if (lightboxActions) lightboxActions.classList.add('hidden');
+            }
+        }
+
+        /* ================= GALLERY STORAGE & RENDERING ================= */
+        function loadPhotosFromStorage() {
+            const stored = localStorage.getItem('lumina_photos_data');
+            if (stored) {
+                try {
+                    photos = JSON.parse(stored);
+                } catch(e) {
+                    photos = DEFAULT_PHOTOS;
+                }
+            } else {
+                photos = DEFAULT_PHOTOS;
+                savePhotosToStorage();
+            }
+        }
+
+        function savePhotosToStorage() {
+            localStorage.setItem('lumina_photos_data', JSON.stringify(photos));
+        }
+
+        function renderCategories() {
+            const categories = ['All', 'Landscape', 'Portrait', 'Street', 'Wedding', 'Architecture', 'Fine Art'];
+            const container = document.getElementById('categoryTabs');
+            
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategoryFilter('${cat}')" 
+                    class="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                        currentFilter === cat 
+                        ? 'bg-gold-500 text-dark-900 shadow-md shadow-gold-500/20' 
+                        : 'bg-dark-800 text-slate-400 hover:text-slate-100 hover:bg-dark-700 border border-dark-700/60'
+                    }">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategoryFilter(category) {
+            currentFilter = category;
+            renderCategories();
+            renderGallery();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderGallery();
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            // Filter photos logic
+            const filtered = photos.filter(item => {
+                const matchesCat = (currentFilter === 'All') || (item.category === currentFilter);
+                const matchesSearch = item.title.toLowerCase().includes(searchQuery) || 
+                                      item.category.toLowerCase().includes(searchQuery) ||
+                                      (item.description && item.description.toLowerCase().includes(searchQuery));
+                return matchesCat && matchesSearch;
+            });
+
+            document.getElementById('photoCount').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            grid.innerHTML = filtered.map(item => `
+                <div class="group relative bg-dark-800 rounded-2xl overflow-hidden border border-dark-700/80 hover:border-gold-500/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/60 flex flex-col">
+                    
+                    <!-- Image Area with Security Overlays -->
+                    <div class="relative w-full h-64 sm:h-72 bg-black overflow-hidden protected-img-container cursor-pointer" onclick="openLightbox('${item.id}')">
+                        <!-- Shield layer prevents right-click/dragging -->
+                        <div class="protection-shield" title="Click to View"></div>
+                        <div class="watermark-overlay"></div>
+
+                        <!-- Main Photo with custom processed CSS filters -->
+                        <img src="${item.url}" alt="${escapeHtml(item.title)}" 
+                             style="filter: ${item.filters || 'none'};"
+                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 pointer-events-none no-select">
+
+                        <!-- Top Badges -->
+                        <div class="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
+                            <span class="text-[10px] font-bold text-gold-300 uppercase tracking-wider bg-dark-900/80 backdrop-blur-md px-2.5 py-1 rounded-md border border-gold-500/30">
+                                ${item.category}
+                            </span>
+                            <span class="text-[10px] text-slate-300 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded flex items-center gap-1">
+                                <i class="fa-solid fa-shield-halved text-gold-500 text-[9px]"></i> Protected
+                            </span>
+                        </div>
+
+                        <!-- Admin Instant Quick Controls -->
+                        ${isAdminLoggedIn ? `
+                            <div class="absolute bottom-3 right-3 z-30 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="event.stopPropagation(); openEditModal('${item.id}')" title="Edit Photo" class="w-8 h-8 rounded-lg bg-dark-900/90 text-gold-400 hover:bg-gold-500 hover:text-dark-900 border border-gold-500/40 flex items-center justify-center text-xs transition-colors">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); deletePhoto('${item.id}')" title="Delete Photo" class="w-8 h-8 rounded-lg bg-dark-900/90 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/40 flex items-center justify-center text-xs transition-colors">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Card Information -->
+                    <div class="p-5 flex-1 flex flex-col justify-between" onclick="openLightbox('${item.id}')">
+                        <div>
+                            <h3 class="text-lg font-serif text-white font-semibold group-hover:text-gold-400 transition-colors line-clamp-1 mb-1.5">
+                                ${escapeHtml(item.title)}
+                            </h3>
+                            <p class="text-slate-400 text-xs line-clamp-2 leading-relaxed">
+                                ${escapeHtml(item.description || 'No description provided.')}
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-dark-700/60 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>${item.date || 'Recent'}</span>
+                            <span class="text-gold-500/80 font-medium group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                                View Details <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* ================= LIGHTBOX MODAL ================= */
+        function openLightbox(id) {
+            const item = photos.find(p => p.id === id);
+            if (!item) return;
+
+            document.getElementById('lightboxImg').src = item.url;
+            document.getElementById('lightboxImg').style.filter = item.filters || 'none';
+            document.getElementById('lightboxTitle').textContent = item.title;
+            document.getElementById('lightboxCategory').textContent = item.category;
+            document.getElementById('lightboxDesc').textContent = item.description || 'No detailed description.';
+            document.getElementById('lightboxDate').textContent = item.date || 'Recent';
+
+            const adminActions = document.getElementById('lightboxAdminActions');
+            if (isAdminLoggedIn) {
+                adminActions.classList.remove('hidden');
+                document.getElementById('lightboxEditBtn').onclick = () => { closeLightbox(); openEditModal(item.id); };
+                document.getElementById('lightboxDeleteBtn').onclick = () => { closeLightbox(); deletePhoto(item.id); };
+            } else {
+                adminActions.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('lightboxModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeLightbox() {
+            const modal = document.getElementById('lightboxModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        /* ================= UPLOAD & IN-APP PHOTO EDITOR ================= */
+        function openUploadModal() {
+            if (!isAdminLoggedIn) return;
+            document.getElementById('photoForm').reset();
+            document.getElementById('editingPhotoId').value = '';
+            document.getElementById('uploadModalTitle').textContent = 'Upload New Photograph';
+            previewBase64 = '';
+            resetFilterSliders();
+            
+            // Default image preview
+            document.getElementById('editorPreviewImg').src = 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=800&q=80';
+            toggleSourceTab('file');
+
+            const modal = document.getElementById('uploadModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function openEditModal(id) {
+            if (!isAdminLoggedIn) return;
+            const item = photos.find(p => p.id === id);
+            if (!item) return;
+
+            document.getElementById('editingPhotoId').value = item.id;
+            document.getElementById('uploadModalTitle').textContent = 'Edit Photograph Details & FX';
+            document.getElementById('photoTitleInput').value = item.title;
+            document.getElementById('photoCategorySelect').value = item.category;
+            document.getElementById('photoDescInput').value = item.description || '';
+            
+            // Parse existing filter settings if applicable
+            parseAndSetFilters(item.filters);
+
+            document.getElementById('editorPreviewImg').src = item.url;
+            previewBase64 = item.url;
+
+            toggleSourceTab('url');
+            document.getElementById('imageUrlInput').value = item.url;
+
+            const modal = document.getElementById('uploadModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeUploadModal() {
+            const modal = document.getElementById('uploadModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function toggleSourceTab(type) {
+            activeSourceTab = type;
+            const fileBtn = document.getElementById('tabFileBtn');
+            const urlBtn = document.getElementById('tabUrlBtn');
+            const fileBox = document.getElementById('fileSourceBox');
+            const urlBox = document.getElementById('urlSourceBox');
+
+            if (type === 'file') {
+                fileBtn.className = 'px-4 py-2 border-b-2 border-gold-500 font-semibold text-gold-400';
+                urlBtn.className = 'px-4 py-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200';
+                fileBox.classList.remove('hidden');
+                urlBox.classList.add('hidden');
+            } else {
+                urlBtn.className = 'px-4 py-2 border-b-2 border-gold-500 font-semibold text-gold-400';
+                fileBtn.className = 'px-4 py-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200';
+                urlBox.classList.remove('hidden');
+                fileBox.classList.add('hidden');
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('File size exceeds 5MB limit.', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                previewBase64 = evt.target.result;
+                document.getElementById('editorPreviewImg').src = previewBase64;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleUrlChange(e) {
+            const url = e.target.value.trim();
+            if (url) {
+                previewBase64 = url;
+                document.getElementById('editorPreviewImg').src = url;
+            }
+        }
+
+        /* Photo Filters Logic */
+        function applyImageFilters() {
+            const bright = document.getElementById('sliderBrightness').value;
+            const contrast = document.getElementById('sliderContrast').value;
+            const saturate = document.getElementById('sliderSaturate').value;
+            const sepia = document.getElementById('sliderSepia').value;
+            const blur = document.getElementById('sliderBlur').value;
+
+            document.getElementById('brightnessVal').textContent = bright + '%';
+            document.getElementById('contrastVal').textContent = contrast + '%';
+            document.getElementById('saturateVal').textContent = saturate + '%';
+            document.getElementById('sepiaVal').textContent = sepia + '%';
+            document.getElementById('blurVal').textContent = blur + 'px';
+
+            const filterStr = `brightness(${bright}%) contrast(${contrast}%) saturate(${saturate}%) sepia(${sepia}%) blur(${blur}px)`;
+            document.getElementById('editorPreviewImg').style.filter = filterStr;
+        }
+
+        function resetFilterSliders() {
+            document.getElementById('sliderBrightness').value = 100;
+            document.getElementById('sliderContrast').value = 100;
+            document.getElementById('sliderSaturate').value = 100;
+            document.getElementById('sliderSepia').value = 0;
+            document.getElementById('sliderBlur').value = 0;
+            applyImageFilters();
+        }
+
+        function parseAndSetFilters(filterStr) {
+            if (!filterStr) { resetFilterSliders(); return; }
+            try {
+                const brightMatch = filterStr.match(/brightness\((\d+)%\)/);
+                const contrastMatch = filterStr.match(/contrast\((\d+)%\)/);
+                const saturateMatch = filterStr.match(/saturate\((\d+)%\)/);
+                const sepiaMatch = filterStr.match(/sepia\((\d+)%\)/);
+                const blurMatch = filterStr.match(/blur\(([\d.]+)px\)/);
+
+                if (brightMatch) document.getElementById('sliderBrightness').value = brightMatch[1];
+                if (contrastMatch) document.getElementById('sliderContrast').value = contrastMatch[1];
+                if (saturateMatch) document.getElementById('sliderSaturate').value = saturateMatch[1];
+                if (sepiaMatch) document.getElementById('sliderSepia').value = sepiaMatch[1];
+                if (blurMatch) document.getElementById('sliderBlur').value = blurMatch[1];
+
+                applyImageFilters();
+            } catch(e) {
+                resetFilterSliders();
+            }
+        }
+
+        function handlePhotoSave(e) {
+            e.preventDefault();
+            
+            const editingId = document.getElementById('editingPhotoId').value;
+            const title = document.getElementById('photoTitleInput').value.trim();
+            const category = document.getElementById('photoCategorySelect').value;
+            const description = document.getElementById('photoDescInput').value.trim();
+
+            let finalUrl = previewBase64;
+            if (activeSourceTab === 'url') {
+                const inputUrl = document.getElementById('imageUrlInput').value.trim();
+                if (inputUrl) finalUrl = inputUrl;
+            }
+
+            if (!finalUrl) {
+                showToast('Please upload an image file or provide an image URL.', 'error');
+                return;
+            }
+
+            // Construct Filter String
+            const bright = document.getElementById('sliderBrightness').value;
+            const contrast = document.getElementById('sliderContrast').value;
+            const saturate = document.getElementById('sliderSaturate').value;
+            const sepia = document.getElementById('sliderSepia').value;
+            const blur = document.getElementById('sliderBlur').value;
+            const filterStr = `brightness(${bright}%) contrast(${contrast}%) saturate(${saturate}%) sepia(${sepia}%) blur(${blur}px)`;
+
+            if (editingId) {
+                // Update Existing Photo
+                const index = photos.findIndex(p => p.id === editingId);
+                if (index !== -1) {
+                    photos[index] = {
+                        ...photos[index],
+                        title,
+                        category,
+                        description,
+                        url: finalUrl,
+                        filters: filterStr
+                    };
+                    showToast('Photograph updated successfully!', 'success');
+                }
+            } else {
+                // Add New Photo
+                const newPhoto = {
+                    id: Date.now().toString(),
+                    title,
+                    category,
+                    description,
+                    url: finalUrl,
+                    date: new Date().toISOString().split('T')[0],
+                    filters: filterStr
+                };
+                photos.unshift(newPhoto);
+                showToast('New photograph published to portfolio!', 'success');
+            }
+
+            savePhotosToStorage();
+            renderGallery();
+            closeUploadModal();
+        }
+
+        function deletePhoto(id) {
+            if (!isAdminLoggedIn) return;
+            
+            const item = photos.find(p => p.id === id);
+            if (!item) return;
+
+            if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
+                photos = photos.filter(p => p.id !== id);
+                savePhotosToStorage();
+                renderGallery();
+                showToast('Photograph removed from portfolio.', 'info');
+            }
+        }
+
+        /* ================= LOGIN MODAL CONTROLS ================= */
+        function openLoginModal() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        /* ================= ANTI-DOWNLOAD / COPY PROTECTION ================= */
+        function setupAntiDownloadGuards() {
+            // Disable Context Menu (Right Click) globally
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showProtectionAlert();
+            });
+
+            // Prevent Dragging images
+            document.addEventListener('dragstart', (e) => {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    showToast('Image dragging disabled for protection.', 'error');
+                }
+            });
+
+            // Prevent common save keyboard shortcuts (Ctrl+S, Cmd+S, Ctrl+U, F12)
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'u' || e.key === 'p')) {
+                    e.preventDefault();
+                    showProtectionAlert();
+                }
+            });
+        }
+
+        function showProtectionAlert() {
+            const alertModal = document.getElementById('protectionAlert');
+            const box = document.getElementById('protectionAlertBox');
+            alertModal.classList.remove('opacity-0', 'pointer-events-none');
+            box.classList.remove('scale-95');
+            box.classList.add('scale-100');
+        }
+
+        function hideProtectionAlert() {
+            const alertModal = document.getElementById('protectionAlert');
+            const box = document.getElementById('protectionAlertBox');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+            alertModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        /* ================= TOAST NOTIFICATIONS ================= */
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            let bgColor = 'bg-dark-800 border-gold-500/50 text-gold-400';
+            let icon = 'fa-circle-info';
+
+            if (type === 'success') {
+                bgColor = 'bg-dark-800 border-emerald-500/50 text-emerald-400';
+                icon = 'fa-circle-check';
+            } else if (type === 'error') {
+                bgColor = 'bg-dark-800 border-red-500/50 text-red-400';
+                icon = 'fa-triangle-exclamation';
+            }
+
+            toast.className = `pointer-events-auto border ${bgColor} px-4 py-3 rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-3 text-xs font-medium transform translate-x-10 opacity-0 transition-all duration-300`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-base"></i>
+                <span class="text-slate-200 flex-1">${escapeHtml(message)}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate In
+            setTimeout(() => {
+                toast.classList.remove('translate-x-10', 'opacity-0');
+            }, 10);
+
+            // Remove after 3.5s
+            setTimeout(() => {
+                toast.classList.add('translate-x-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        /* Utility Helper */
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+    </script>
 </body>
 </html>
